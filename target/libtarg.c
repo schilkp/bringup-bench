@@ -269,3 +269,30 @@ libtarg_sbrk(size_t inc)
 #endif
 }
 
+uint64_t cycles_total, instr_total, cycle_count, instret_count;
+
+void libtarg_start_perf(){
+#if defined(TARGET_CVA6_DCHECK)
+#if defined(PROFILE) && PROFILE == 1
+  __asm__ volatile("csrr %0, mcycle" : "=r"(cycle_count));
+  __asm__ volatile("csrr %0, minstret" : "=r"(instret_count));
+  cycles_total = -cycle_count;
+  instr_total = -instret_count;
+#endif
+#endif
+}
+
+void libtarg_stop_perf(){
+#if defined(TARGET_CVA6_DCHECK)
+#if defined(PROFILE) && PROFILE == 1
+  __asm__ volatile("csrr %0, mcycle" : "=r"(cycle_count));
+  __asm__ volatile("csrr %0, minstret" : "=r"(instret_count));
+#endif
+  libmin_printf("bringup: perf finished.\n");
+#if defined(PROFILE) && PROFILE == 1
+  cycles_total += cycle_count;
+  instr_total += instret_count;
+  libmin_printf("tot_cycles = %d\n\rinstret = %d\n\r", cycles_total, instr_total);
+#endif
+#endif
+}
