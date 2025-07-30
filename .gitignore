@@ -14,3 +14,10 @@ FOO
 *.log
 ibex_simple_system_pcount.csv
 target/simple_mmio_plugin.so
+# clangd:
+compile_commands.json
+.cache/
+# dcheck:
+perf_hart_0.json
+trace_hart_0.dasm
+FOO_*

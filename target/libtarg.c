@@ -104,6 +104,12 @@ simple_output_hash(uint64_t __hashval)
   SIMPLE_DEV_WRITE(SIMPLE_CTRL_BASE + SIMPLE_CTRL_HIHASH, (uint32_t)(__hashval >> 32));
   SIMPLE_DEV_WRITE(SIMPLE_CTRL_BASE + SIMPLE_CTRL_LOHASH, (uint32_t)__hashval);
 }
+#elif defined(TARGET_CVA6_DCHECK)
+#include <stdlib.h>
+
+volatile uint8_t *dcheck_exit = (uint8_t*) 0x1000;
+volatile uint8_t *dcheck_putc = (uint8_t*) 0x1008;
+volatile uint32_t *dcheck_putword = (uint32_t*) 0x1008;
 
 #else /* undefined target */
 #error Co-simulation platform not defined, define TARGET_HOST or a target-dependent definition.
@@ -152,6 +158,12 @@ SPIN_SUCCESS_ADDR:
 #elif defined(TARGET_SIMPLE) || defined(TARGET_SPIKE)
   // libmin_printf("EXIT: success\n");
   simple_halt();
+#elif defined(TARGET_CVA6_DCHECK)
+  // printf("** hashval = 0x%016lx\n", __hashval);
+  // printf("EXIT: success\n");
+  while (1) {
+    *dcheck_exit = 0;
+  }
 #else
 #error Co-simulation platform not defined, define TARGET_HOST or a target-dependent definition.
 #endif
@@ -178,6 +190,12 @@ SPIN_FAIL_ADDR:
 #elif defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE)
   // libmin_printf("EXIT: fail code = %d\n", code);
   simple_halt();
+#elif defined(TARGET_CVA6_DCHECK)
+  // printf("** hashval = 0x%016lx\n", __hashval);
+  // printf("EXIT: fail code = %d\n", code);
+  while (1) {
+    *dcheck_exit = code;
+  }
 #else
 #error Co-simulation platform not defined, define TARGET_HOST or a target-dependent definition.
 #endif
@@ -202,6 +220,8 @@ libtarg_putc(char c)
   __hashval = libmin_fnv64a(&c, 1, __hashval);
 #elif defined(TARGET_SIMPLE) || defined(TARGET_SPIKE)
   simple_putchar(c);
+#elif defined(TARGET_CVA6_DCHECK)
+  *dcheck_putc = c;
 #else
 #error Co-simulation platform not defined, define TARGET_HOST or a target-dependent definition.
 #endif
@@ -219,7 +239,7 @@ static uint8_t __heap[MAX_HEAP];
 static uint32_t __heap_ptr = 0;
 #endif /* TARGET_HAHOST */
 
-#if defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE)
+#if defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE) || defined(TARGET_CVA6_DCHECK)
 #define MAX_HEAP    (32*1024)
 static uint8_t __heap[MAX_HEAP];
 static uint32_t __heap_ptr = 0;
@@ -234,7 +254,7 @@ libtarg_sbrk(size_t inc)
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif /* __clang__ */
   return sbrk(inc);
-#elif defined(TARGET_SA) || defined(TARGET_HAHOST) || defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE)
+#elif defined(TARGET_SA) || defined(TARGET_HAHOST) || defined(TARGET_SIMPLE) || defined(TARGET_SPIKE) || defined(TARGET_HASPIKE) || defined(TARGET_CVA6_DCHECK)
   uint8_t *ptr = &__heap[__heap_ptr];
   if (inc == 0)
     return ptr;

@@ -112,6 +112,18 @@ TARGET_CLEAN = *.d ibex_simple_system_pcount.csv
 TARGET_EXCLUDES = anagram c-interp checkers lz-compress rho-factor rsa-cipher spelt2num
 TARGET_CONFIGURED = 1
 TARGET_REFEXT = out
+else ifeq ($(TARGET), cva6_dcheck)
+TARGET_CC = riscv64-unknown-elf-gcc
+TARGET_AR = riscv64-unknown-elf-ar
+TARGET_CFLAGS = -DTARGET_CVA6_DCHECK -march=rv64gc_zifencei -mabi=lp64d -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding -I../../support_lib
+TARGET_LIBS = -lsupport_lib -L../../support_lib -lgcc
+TARGET_SIM = ../../../../top
+TARGET_DIFF = cp FOO FOO_full && grep "dcheck_print:" FOO | sed 's/.*dcheck_print: //' > FOO.tmp && mv FOO.tmp FOO && diff
+TARGET_EXE = $(PROG).elf
+TARGET_CLEAN = FOO_full
+TARGET_EXCLUDES = anagram c-interp checkers donut lz-compress rho-factor rsa-cipher spelt2num
+TARGET_CONFIGURED = 1
+TARGET_REFEXT = out
 else
 # default is an unconfigured
 TARGET_CONFIGURED = 0
@@ -157,6 +169,8 @@ else ifeq ($(TARGET), simple)
 	$(TARGET_CC) $(CFLAGS) -T ../target/simple-map.ld $^ ../target/simple-crt0.S -o $@ $(LIBS) $(TARGET_LIBS)
 else ifeq ($(TARGET), spike)
 	$(TARGET_CC) $(CFLAGS) -T ../target/spike-map.ld $^ ../target/spike-crt0.S -o $@ $(LIBS) $(TARGET_LIBS)
+else ifeq ($(TARGET), cva6_dcheck)
+	$(TARGET_CC) $(CFLAGS) -Wl,-gc-sections -T ../../support_lib/cva6_dcheck.ld $^ -o $@ $(LIBS) $(TARGET_LIBS)
 else
 	$(error MODE is not defined (add: TARGET={host|sa}).)
 endif
@@ -183,7 +197,28 @@ else
 	  $(MAKE) TARGET=$$TARGET clean build test || exit 1; \
 	  cd .. ; \
 	done
-endif 
+endif
+
+.PHONY: build-tests
+build-tests:
+ifeq ($(TARGET_CONFIGURED), 0)
+	@echo "'run-tests' command requires a TARGET definition." ; \
+	echo "" ; \
+	echo "$$HELP_TEXT"
+else
+	@for _BMARK in $(TARGET_BMARKS) ; do \
+	  cd $$_BMARK ; \
+	  echo "--------------------------------" ; \
+	  echo "Building "$$_BMARK" in TARGET="$$TARGET ; \
+	  echo "--------------------------------" ; \
+	  $(MAKE) TARGET=$$TARGET clean-test build || exit 1; \
+	  cd .. ; \
+	done
+endif
+
+# Test clean that only removes per-test files:
+clean-test:
+	rm -f $(PROG).host $(PROG).sa $(PROG).elf $(PROG).hahost $(PROG).haspike *.o core mem.out *.log FOO $(LOCAL_CLEAN) $(TARGET_CLEAN)
 
 clean-all all-clean:
 	@for _BMARK in $(BMARKS) ; do \
