@@ -35,3 +35,10 @@ libmin_memset(void *dest, int c, size_t n)
 
 	return dest;
 }
+
+#ifdef TARGET_CVA6_DCHECK
+// Standard library function alias for GCC-generated calls
+void *memset(void *s, int c, size_t n) {
+    return libmin_memset(s, c, n);
+}
+#endif
