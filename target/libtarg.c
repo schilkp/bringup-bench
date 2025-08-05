@@ -269,3 +269,24 @@ libtarg_sbrk(size_t inc)
 #endif
 }
 
+void libtarg_start_perf() {
+#if defined(TARGET_CVA6_DCHECK)
+#if defined(PROFILE) && PROFILE == 1
+  // cva6_perf counters started/stopped by CSR reads:
+  uint64_t dummy;
+  __asm__ volatile("csrr %0, mcycle" : "=r"(dummy));
+  __asm__ volatile("csrr %0, minstret" : "=r"(dummy));
+#endif
+#endif
+}
+
+void libtarg_stop_perf() {
+#if defined(TARGET_CVA6_DCHECK)
+#if defined(PROFILE) && PROFILE == 1
+  // cva6_perf counters started/stopped by CSR reads:
+  uint64_t dummy;
+  __asm__ volatile("csrr %0, mcycle" : "=r"(dummy));
+  __asm__ volatile("csrr %0, minstret" : "=r"(dummy));
+#endif
+#endif
+}
