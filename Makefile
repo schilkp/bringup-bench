@@ -115,7 +115,7 @@ TARGET_REFEXT = out
 else ifeq ($(TARGET), cva6_dcheck)
 TARGET_CC = riscv64-unknown-elf-gcc
 TARGET_AR = riscv64-unknown-elf-ar
-TARGET_CFLAGS = -DPROFILE -DTARGET_CVA6_DCHECK -march=rv64gc_zifencei -mabi=lp64d -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding -I../../support_lib
+TARGET_CFLAGS = -DPROFILE -DTARGET_CVA6_DCHECK -DLIBMIN_MALLOC_ALIGN_BYTES=8 -march=rv64gc_zifencei -mabi=lp64d -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding -I../../support_lib
 TARGET_LIBS = -lsupport_lib -L../../support_lib -lgcc
 TARGET_SIM = ../../../../top
 TARGET_DIFF = cp FOO FOO_full && grep "dcheck_print:" FOO | sed 's/.*dcheck_print: //' > FOO.tmp && mv FOO.tmp FOO && diff
