@@ -20,4 +20,5 @@ compile_commands.json
 # dcheck:
 perf_hart_0.json
 trace_hart_0.dasm
+trace_hart_0.pftrace
 FOO_*

@@ -70,14 +70,14 @@ TARGET_SIM =
 TARGET_DIFF = diff
 TARGET_EXE = $(PROG).hahost
 TARGET_CLEAN =
-TARGET_EXCLUDES = 
+TARGET_EXCLUDES =
 TARGET_CONFIGURED = 1
 TARGET_REFEXT = hash
 else ifeq ($(TARGET), hashalone-spike)
 TARGET_CC = riscv32-unknown-elf-gcc
 #TARGET_CC = riscv32-unknown-elf-clang
 TARGET_AR = riscv32-unknown-elf-ar
-TARGET_CFLAGS = -DTARGET_HASPIKE -march=rv32imc -mabi=ilp32 -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding # -MMD -mcmodel=medany 
+TARGET_CFLAGS = -DTARGET_HASPIKE -march=rv32imc -mabi=ilp32 -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding # -MMD -mcmodel=medany
 TARGET_LIBS = -lgcc
 TARGET_SIM = ../../../riscv-isa-sim/build/spike --isa=RV32IMC --extlib=../target/simple_mmio_plugin.so -m0x100000:0x820000 --device=simple_mmio_plugin,0x20000,x
 TARGET_EXE = $(PROG).haspike
@@ -103,7 +103,7 @@ else ifeq ($(TARGET), spike)
 TARGET_CC = riscv32-unknown-elf-gcc
 #TARGET_CC = riscv32-unknown-elf-clang
 TARGET_AR = riscv32-unknown-elf-ar
-TARGET_CFLAGS = -DTARGET_SPIKE -march=rv32imc -mabi=ilp32 -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding # -MMD -mcmodel=medany 
+TARGET_CFLAGS = -DTARGET_SPIKE -march=rv32imc -mabi=ilp32 -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding # -MMD -mcmodel=medany
 TARGET_LIBS = -lgcc
 TARGET_SIM = ../../../riscv-isa-sim/build/spike --isa=RV32IMC --extlib=../target/simple_mmio_plugin.so -m0x100000:0x820000 --device=simple_mmio_plugin,0x20000,x
 TARGET_DIFF = diff
@@ -115,9 +115,9 @@ TARGET_REFEXT = out
 else ifeq ($(TARGET), cva6_dcheck)
 TARGET_CC = riscv64-unknown-elf-gcc
 TARGET_AR = riscv64-unknown-elf-ar
-TARGET_CFLAGS = -DPROFILE -DTARGET_CVA6_DCHECK -DLIBMIN_MALLOC_ALIGN_BYTES=8 -march=rv64gc_zifencei -mabi=lp64d -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding -I../../support_lib
-TARGET_LIBS = -lsupport_lib -L../../support_lib -lgcc
-TARGET_SIM = ../../../../top
+TARGET_CFLAGS = -DPROFILE -DTARGET_CVA6_DCHECK -DLIBMIN_MALLOC_ALIGN_BYTES=8 -march=rv64gc_zifencei -mabi=lp64d -static -mcmodel=medlow -Wall -g -Os -fvisibility=hidden -nostdlib -nostartfiles -ffreestanding -I../../../support_lib
+TARGET_LIBS = -lsupport -L../../../support_lib/build -lgcc
+TARGET_SIM = ../../../out/top
 TARGET_DIFF = cp FOO FOO_full && grep "dcheck_print:" FOO | sed 's/.*dcheck_print: //' > FOO.tmp && mv FOO.tmp FOO && diff
 TARGET_EXE = $(PROG).elf
 TARGET_CLEAN = FOO_full
@@ -170,7 +170,7 @@ else ifeq ($(TARGET), simple)
 else ifeq ($(TARGET), spike)
 	$(TARGET_CC) $(CFLAGS) -T ../target/spike-map.ld $^ ../target/spike-crt0.S -o $@ $(LIBS) $(TARGET_LIBS)
 else ifeq ($(TARGET), cva6_dcheck)
-	$(TARGET_CC) $(CFLAGS) -Wl,-gc-sections -T ../../support_lib/cva6_dcheck.ld $^ -o $@ $(LIBS) $(TARGET_LIBS)
+	$(TARGET_CC) $(CFLAGS) -Wl,-gc-sections -T ../../../support_lib/cva6_dcheck.ld $^ -o $@ $(LIBS) $(TARGET_LIBS)
 else
 	$(error MODE is not defined (add: TARGET={host|sa}).)
 endif
